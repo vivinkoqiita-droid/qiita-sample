@@ -151,10 +151,10 @@ namespace ListDictionaryHashSetBench
                 BenchmarkContains,
                 "『この番号はあるか』を何回も確認する処理"));
             _scenarios.Add(new ScenarioDefinition(
-                "注文番号から明細を引く",
-                "ランダムな注文番号を受け取り、その番号の明細を取り出す。詳細画面やAPI参照に近い",
+                "ランダムなIDを照会する",
+                "ランダムなIDを受け取り、そのIDが指す値を照会する。ID照会の前処理に近い",
                 BenchmarkRandomLookup,
-                "『番号を受けて1件取り出す』処理"));
+                "『IDを受けて値を照会する』処理"));
             _scenarios.Add(new ScenarioDefinition(
                 "重複行を除いて取り込む",
                 "同じIDが混じるデータを順番に読み込み、まだ無い行だけ残す。CSV取込の前処理に近い",
@@ -623,7 +623,7 @@ namespace ListDictionaryHashSetBench
                 GC.KeepAlive(total);
             });
 
-            return new BenchmarkResult(listMs, dictionaryMs, hashSetMs, "番号から1件を引く処理では、取り出し方の違いが待ち時間に直結する");
+            return new BenchmarkResult(listMs, dictionaryMs, hashSetMs, "IDを受けて値を照会する処理では、取り出し方の違いが待ち時間に直結する");
         }
 
         /// <summary>
