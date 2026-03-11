@@ -171,8 +171,8 @@ namespace FileSystemObserver
             this.btnClear = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
-            this.chkMergeChangedEvents = new System.Windows.Forms.CheckBox();
             this.chkIncludeSubdirectories = new System.Windows.Forms.CheckBox();
+            this.chkMergeChangedEvents = new System.Windows.Forms.CheckBox();
             this.txtFilter = new System.Windows.Forms.TextBox();
             this.lblFilter = new System.Windows.Forms.Label();
             this.btnOpenDirectory = new System.Windows.Forms.Button();
@@ -195,7 +195,6 @@ namespace FileSystemObserver
             // 
             // pnlTop
             // 
-            this.pnlTop.BackColor = System.Drawing.Color.WhiteSmoke;
             this.pnlTop.Controls.Add(this.lblCount);
             this.pnlTop.Controls.Add(this.lblHint);
             this.pnlTop.Controls.Add(this.lblTitle);
@@ -212,6 +211,7 @@ namespace FileSystemObserver
             this.pnlTop.Controls.Add(this.btnBrowse);
             this.pnlTop.Controls.Add(this.txtTargetDirectory);
             this.pnlTop.Controls.Add(this.lblTargetDirectory);
+            this.pnlTop.BackColor = System.Drawing.Color.WhiteSmoke;
             this.pnlTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlTop.Location = new System.Drawing.Point(0, 0);
             this.pnlTop.Name = "pnlTop";
@@ -221,9 +221,9 @@ namespace FileSystemObserver
             // lblCount
             // 
             this.lblCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCount.Location = new System.Drawing.Point(1352, 126);
+            this.lblCount.Location = new System.Drawing.Point(1262, 126);
             this.lblCount.Name = "lblCount";
-            this.lblCount.Size = new System.Drawing.Size(120, 20);
+            this.lblCount.Size = new System.Drawing.Size(210, 20);
             this.lblCount.TabIndex = 13;
             this.lblCount.Text = "表示件数: 0";
             this.lblCount.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -246,7 +246,7 @@ namespace FileSystemObserver
             this.lblTitle.Font = new System.Drawing.Font("Yu Gothic UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.lblTitle.Location = new System.Drawing.Point(12, 12);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(246, 32);
+            this.lblTitle.Size = new System.Drawing.Size(171, 21);
             this.lblTitle.TabIndex = 14;
             this.lblTitle.Text = "ファイル変更監視ビューア";
             // 
@@ -274,67 +274,67 @@ namespace FileSystemObserver
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnClear.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnClear.Location = new System.Drawing.Point(1304, 69);
             this.btnClear.Name = "btnClear";
+            this.btnClear.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnClear.Size = new System.Drawing.Size(168, 42);
             this.btnClear.TabIndex = 9;
             this.btnClear.Text = "一覧消去";
+            this.btnClear.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.btnClear.UseVisualStyleBackColor = true;
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
             // btnStop
             // 
             this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStop.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnStop.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnStop.Location = new System.Drawing.Point(1124, 69);
             this.btnStop.Name = "btnStop";
+            this.btnStop.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnStop.Size = new System.Drawing.Size(168, 42);
             this.btnStop.TabIndex = 8;
             this.btnStop.Text = "監視終了";
+            this.btnStop.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.btnStop.UseVisualStyleBackColor = true;
             this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
             // 
             // btnStart
             // 
             this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStart.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnStart.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnStart.Location = new System.Drawing.Point(944, 69);
             this.btnStart.Name = "btnStart";
+            this.btnStart.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnStart.Size = new System.Drawing.Size(168, 42);
             this.btnStart.TabIndex = 7;
             this.btnStart.Text = "監視開始";
+            this.btnStart.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
-            // 
-            // chkMergeChangedEvents
-            // 
-            this.chkMergeChangedEvents.AutoSize = true;
-            this.chkMergeChangedEvents.Location = new System.Drawing.Point(583, 79);
-            this.chkMergeChangedEvents.Name = "chkMergeChangedEvents";
-            this.chkMergeChangedEvents.Size = new System.Drawing.Size(179, 29);
-            this.chkMergeChangedEvents.TabIndex = 15;
-            this.chkMergeChangedEvents.Text = "更新をまとめて表示";
-            this.chkMergeChangedEvents.UseVisualStyleBackColor = true;
             // 
             // chkIncludeSubdirectories
             // 
             this.chkIncludeSubdirectories.AutoSize = true;
             this.chkIncludeSubdirectories.Location = new System.Drawing.Point(426, 79);
             this.chkIncludeSubdirectories.Name = "chkIncludeSubdirectories";
-            this.chkIncludeSubdirectories.Size = new System.Drawing.Size(169, 29);
+            this.chkIncludeSubdirectories.Size = new System.Drawing.Size(137, 19);
             this.chkIncludeSubdirectories.TabIndex = 6;
             this.chkIncludeSubdirectories.Text = "サブフォルダも対象";
             this.chkIncludeSubdirectories.UseVisualStyleBackColor = true;
+            // 
+            // chkMergeChangedEvents
+            // 
+            this.chkMergeChangedEvents.AutoSize = true;
+            this.chkMergeChangedEvents.Location = new System.Drawing.Point(583, 79);
+            this.chkMergeChangedEvents.Name = "chkMergeChangedEvents";
+            this.chkMergeChangedEvents.Size = new System.Drawing.Size(137, 19);
+            this.chkMergeChangedEvents.TabIndex = 15;
+            this.chkMergeChangedEvents.Text = "更新をまとめて表示";
+            this.chkMergeChangedEvents.UseVisualStyleBackColor = true;
             // 
             // txtFilter
             // 
             this.txtFilter.Location = new System.Drawing.Point(92, 76);
             this.txtFilter.Name = "txtFilter";
-            this.txtFilter.Size = new System.Drawing.Size(316, 31);
+            this.txtFilter.Size = new System.Drawing.Size(316, 23);
             this.txtFilter.TabIndex = 5;
             // 
             // lblFilter
@@ -342,33 +342,33 @@ namespace FileSystemObserver
             this.lblFilter.AutoSize = true;
             this.lblFilter.Location = new System.Drawing.Point(16, 79);
             this.lblFilter.Name = "lblFilter";
-            this.lblFilter.Size = new System.Drawing.Size(64, 25);
+            this.lblFilter.Size = new System.Drawing.Size(59, 15);
             this.lblFilter.TabIndex = 4;
             this.lblFilter.Text = "フィルタ";
             // 
             // btnOpenDirectory
             // 
             this.btnOpenDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOpenDirectory.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnOpenDirectory.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnOpenDirectory.Location = new System.Drawing.Point(1304, 15);
             this.btnOpenDirectory.Name = "btnOpenDirectory";
+            this.btnOpenDirectory.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnOpenDirectory.Size = new System.Drawing.Size(168, 42);
             this.btnOpenDirectory.TabIndex = 3;
             this.btnOpenDirectory.Text = "フォルダ表示";
+            this.btnOpenDirectory.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.btnOpenDirectory.UseVisualStyleBackColor = true;
             this.btnOpenDirectory.Click += new System.EventHandler(this.btnOpenDirectory_Click);
             // 
             // btnBrowse
             // 
             this.btnBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowse.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnBrowse.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnBrowse.Location = new System.Drawing.Point(1124, 15);
             this.btnBrowse.Name = "btnBrowse";
+            this.btnBrowse.Font = new System.Drawing.Font("Yu Gothic UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnBrowse.Size = new System.Drawing.Size(168, 42);
             this.btnBrowse.TabIndex = 2;
             this.btnBrowse.Text = "参照";
+            this.btnBrowse.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.btnBrowse.UseVisualStyleBackColor = true;
             this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
@@ -379,17 +379,15 @@ namespace FileSystemObserver
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtTargetDirectory.Location = new System.Drawing.Point(92, 39);
             this.txtTargetDirectory.Name = "txtTargetDirectory";
-            this.txtTargetDirectory.Size = new System.Drawing.Size(1008, 31);
+            this.txtTargetDirectory.Size = new System.Drawing.Size(1008, 23);
             this.txtTargetDirectory.TabIndex = 1;
-            this.txtTargetDirectory.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainForm_DragDrop);
-            this.txtTargetDirectory.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainForm_DragEnter);
             // 
             // lblTargetDirectory
             // 
             this.lblTargetDirectory.AutoSize = true;
             this.lblTargetDirectory.Location = new System.Drawing.Point(16, 42);
             this.lblTargetDirectory.Name = "lblTargetDirectory";
-            this.lblTargetDirectory.Size = new System.Drawing.Size(66, 25);
+            this.lblTargetDirectory.Size = new System.Drawing.Size(59, 15);
             this.lblTargetDirectory.TabIndex = 0;
             this.lblTargetDirectory.Text = "監視先";
             // 
@@ -416,7 +414,6 @@ namespace FileSystemObserver
             this.dgvEvents.Name = "dgvEvents";
             this.dgvEvents.ReadOnly = true;
             this.dgvEvents.RowHeadersVisible = false;
-            this.dgvEvents.RowHeadersWidth = 62;
             this.dgvEvents.RowTemplate.Height = 21;
             this.dgvEvents.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvEvents.Size = new System.Drawing.Size(1484, 605);
@@ -425,7 +422,6 @@ namespace FileSystemObserver
             // colNumber
             // 
             this.colNumber.HeaderText = "No";
-            this.colNumber.MinimumWidth = 8;
             this.colNumber.Name = "colNumber";
             this.colNumber.ReadOnly = true;
             this.colNumber.Width = 60;
@@ -433,7 +429,6 @@ namespace FileSystemObserver
             // colEventType
             // 
             this.colEventType.HeaderText = "種別";
-            this.colEventType.MinimumWidth = 8;
             this.colEventType.Name = "colEventType";
             this.colEventType.ReadOnly = true;
             this.colEventType.Width = 90;
@@ -441,7 +436,6 @@ namespace FileSystemObserver
             // colRelativePath
             // 
             this.colRelativePath.HeaderText = "相対パス";
-            this.colRelativePath.MinimumWidth = 8;
             this.colRelativePath.Name = "colRelativePath";
             this.colRelativePath.ReadOnly = true;
             this.colRelativePath.Width = 260;
@@ -449,7 +443,6 @@ namespace FileSystemObserver
             // colFileName
             // 
             this.colFileName.HeaderText = "ファイル名";
-            this.colFileName.MinimumWidth = 8;
             this.colFileName.Name = "colFileName";
             this.colFileName.ReadOnly = true;
             this.colFileName.Width = 220;
@@ -457,15 +450,13 @@ namespace FileSystemObserver
             // colEventTime
             // 
             this.colEventTime.HeaderText = "更新日時";
-            this.colEventTime.MinimumWidth = 8;
             this.colEventTime.Name = "colEventTime";
             this.colEventTime.ReadOnly = true;
             this.colEventTime.Width = 170;
             // 
             // colUpdatedBy
             // 
-            this.colUpdatedBy.HeaderText = "更新者";
-            this.colUpdatedBy.MinimumWidth = 8;
+            this.colUpdatedBy.HeaderText = "判定ユーザー";
             this.colUpdatedBy.Name = "colUpdatedBy";
             this.colUpdatedBy.ReadOnly = true;
             this.colUpdatedBy.Width = 170;
@@ -473,7 +464,6 @@ namespace FileSystemObserver
             // colDetectionSource
             // 
             this.colDetectionSource.HeaderText = "判定元";
-            this.colDetectionSource.MinimumWidth = 8;
             this.colDetectionSource.Name = "colDetectionSource";
             this.colDetectionSource.ReadOnly = true;
             this.colDetectionSource.Width = 90;
@@ -481,7 +471,6 @@ namespace FileSystemObserver
             // colProcessName
             // 
             this.colProcessName.HeaderText = "プロセス";
-            this.colProcessName.MinimumWidth = 8;
             this.colProcessName.Name = "colProcessName";
             this.colProcessName.ReadOnly = true;
             this.colProcessName.Width = 140;
@@ -490,14 +479,12 @@ namespace FileSystemObserver
             // 
             this.colNotes.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.colNotes.HeaderText = "補足";
-            this.colNotes.MinimumWidth = 8;
             this.colNotes.Name = "colNotes";
             this.colNotes.ReadOnly = true;
             // 
             // MainForm
             // 
-            this.AllowDrop = true;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1484, 761);
@@ -508,8 +495,6 @@ namespace FileSystemObserver
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ファイル変更監視ビューア";
-            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainForm_DragDrop);
-            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainForm_DragEnter);
             this.pnlTop.ResumeLayout(false);
             this.pnlTop.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvEvents)).EndInit();

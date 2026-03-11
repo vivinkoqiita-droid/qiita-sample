@@ -12,6 +12,11 @@ namespace FileSystemObserver
     public partial class MainForm : Form
     {
         /// <summary>
+        /// 画面タイトル
+        /// </summary>
+        private const string FormTitle = "ファイル変更監視ビューア";
+
+        /// <summary>
         /// 一覧最大件数
         /// </summary>
         private const int MaxLogCount = 1000;
@@ -50,9 +55,32 @@ namespace FileSystemObserver
         /// </summary>
         private void InitializeView()
         {
+            Text = FormTitle;
             txtTargetDirectory.Text = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            txtFilter.Text = "*.*";
+            chkIncludeSubdirectories.Checked = true;
+            chkMergeChangedEvents.Checked = false;
             UpdateMonitoringState(false);
+            RegisterDragAndDrop();
             UpdateHintLabel();
+        }
+
+
+
+        /// <summary>
+        /// ドラッグアンドドロップ初期化処理
+        /// 入力欄対象
+        /// 画面全体対象
+        /// </summary>
+        private void RegisterDragAndDrop()
+        {
+            AllowDrop = true;
+            txtTargetDirectory.AllowDrop = true;
+
+            DragEnter += MainForm_DragEnter;
+            DragDrop += MainForm_DragDrop;
+            txtTargetDirectory.DragEnter += MainForm_DragEnter;
+            txtTargetDirectory.DragDrop += MainForm_DragDrop;
         }
 
         /// <summary>
@@ -166,7 +194,7 @@ namespace FileSystemObserver
 
             if (!Directory.Exists(directoryPath))
             {
-                MessageBox.Show(this, "指定フォルダ未存在", Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "指定フォルダ未存在", FormTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -208,14 +236,14 @@ namespace FileSystemObserver
 
             if (string.IsNullOrWhiteSpace(directoryPath))
             {
-                MessageBox.Show(this, "監視対象フォルダ未入力", Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "監視対象フォルダ未入力", FormTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtTargetDirectory.Focus();
                 return;
             }
 
             if (!Directory.Exists(directoryPath))
             {
-                MessageBox.Show(this, "監視対象フォルダ未存在", Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "監視対象フォルダ未存在", FormTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtTargetDirectory.Focus();
                 return;
             }
@@ -318,7 +346,7 @@ namespace FileSystemObserver
         {
             StringBuilder builder = new StringBuilder();
             builder.Append("監視先フォルダは入力・参照・ドラッグアンドドロップ対応。 ");
-            builder.Append("更新者列は Windows 監査ログ優先。 ");
+            builder.Append("判定ユーザー列は Windows 監査ログ優先。 ");
             builder.Append("監査未設定時は所有者表示。 ");
             builder.Append("短時間の更新をまとめる切替あり。 ");
             builder.Append("取得不可時は不明表示。");
