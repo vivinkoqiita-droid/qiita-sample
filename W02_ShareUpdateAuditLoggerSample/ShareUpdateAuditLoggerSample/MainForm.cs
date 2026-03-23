@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ShareUpdateAuditLoggerSample
@@ -84,7 +85,6 @@ namespace ShareUpdateAuditLoggerSample
         /// </summary>
         private void btnStart_Click(object sender, EventArgs e)
         {
-
             string accessMessage;
             bool canReadSecurityLog = _eventLogReader.TryCheckSecurityLogAccess(out accessMessage);
             lblStatusDetail.Text = accessMessage;
@@ -94,7 +94,6 @@ namespace ShareUpdateAuditLoggerSample
                 MessageBox.Show(this, accessMessage, "Security ログ参照確認", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
 
             string targetFolder = txtTargetFolder.Text.Trim();
             int lookBackSeconds;
@@ -120,7 +119,7 @@ namespace ShareUpdateAuditLoggerSample
             btnStart.Enabled = false;
             btnStop.Enabled = true;
             lblStatusValue.Text = "監視中";
-            lblStatusDetail.Text = "Security ログの 4663 を参照します。監査ログ反映待ちのため数秒遅れて表示される場合があります。";
+            lblStatusDetail.Text = "Security ログの 4663 / 4660 を参照します。監査ログ反映待ちのため数秒遅れて表示される場合があります。";
         }
 
         /// <summary>
@@ -167,33 +166,33 @@ namespace ShareUpdateAuditLoggerSample
         /// <summary>
         /// ファイル変更通知受信時処理
         /// </summary>
-        private void fileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
+        private async void fileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
         {
-            HandleWatcherEvent(e.ChangeType, e.FullPath);
+            await HandleWatcherEventAsync(e.ChangeType, e.FullPath);
         }
 
         /// <summary>
         /// ファイル作成通知受信時処理
         /// </summary>
-        private void fileSystemWatcher1_Created(object sender, FileSystemEventArgs e)
+        private async void fileSystemWatcher1_Created(object sender, FileSystemEventArgs e)
         {
-            HandleWatcherEvent(e.ChangeType, e.FullPath);
+            await HandleWatcherEventAsync(e.ChangeType, e.FullPath);
         }
 
         /// <summary>
         /// ファイル削除通知受信時処理
         /// </summary>
-        private void fileSystemWatcher1_Deleted(object sender, FileSystemEventArgs e)
+        private async void fileSystemWatcher1_Deleted(object sender, FileSystemEventArgs e)
         {
-            HandleWatcherEvent(e.ChangeType, e.FullPath);
+            await HandleWatcherEventAsync(e.ChangeType, e.FullPath);
         }
 
         /// <summary>
         /// ファイル名称変更通知受信時処理
         /// </summary>
-        private void fileSystemWatcher1_Renamed(object sender, RenamedEventArgs e)
+        private async void fileSystemWatcher1_Renamed(object sender, RenamedEventArgs e)
         {
-            HandleWatcherEvent(WatcherChangeTypes.Renamed, e.FullPath, e.OldFullPath);
+            await HandleWatcherEventAsync(WatcherChangeTypes.Renamed, e.FullPath, e.OldFullPath);
         }
 
         /// <summary>
@@ -212,7 +211,7 @@ namespace ShareUpdateAuditLoggerSample
         /// <param name="changeType">変更種別</param>
         /// <param name="fullPath">変更後フルパス</param>
         /// <param name="oldFullPath">変更前フルパス</param>
-        private void HandleWatcherEvent(WatcherChangeTypes changeType, string fullPath, string oldFullPath = null)
+        private async Task HandleWatcherEventAsync(WatcherChangeTypes changeType, string fullPath, string oldFullPath = null)
         {
             if (string.IsNullOrWhiteSpace(fullPath))
             {
@@ -229,9 +228,21 @@ namespace ShareUpdateAuditLoggerSample
                 return;
             }
 
-            FileAuditLogEntry entry = BuildLogEntry(changeType, fullPath, oldFullPath);
-            _entries.Insert(0, entry);
-            lblStatusDetail.Text = entry.備考;
+            DateTime detectedAt = DateTime.Now;
+            DateTime? lastWriteTime = TryGetLastWriteTime(fullPath);
+
+            // 先行表示
+            FileAuditLogEntry pendingEntry = CreatePendingLogEntry(changeType, fullPath, oldFullPath, detectedAt, lastWriteTime);
+            _entries.Insert(0, pendingEntry);
+            lblStatusDetail.Text = pendingEntry.備考;
+
+            // 遅延再検索
+            EventAuditInfo auditInfo = await ResolveAuditInfoAsync(changeType, fullPath, oldFullPath, detectedAt);
+            FileAuditLogEntry resolvedEntry = BuildLogEntry(changeType, fullPath, oldFullPath, detectedAt, lastWriteTime, auditInfo);
+
+            // 後追い置換
+            ReplaceEntry(pendingEntry, resolvedEntry);
+            lblStatusDetail.Text = resolvedEntry.備考;
         }
 
         /// <summary>
@@ -259,18 +270,250 @@ namespace ShareUpdateAuditLoggerSample
         }
 
         /// <summary>
+        /// 保留行生成処理
+        /// </summary>
+        /// <param name="changeType">変更種別</param>
+        /// <param name="fullPath">変更後フルパス</param>
+        /// <param name="oldFullPath">変更前フルパス</param>
+        /// <param name="detectedAt">検知時刻</param>
+        /// <param name="lastWriteTime">更新時間</param>
+        /// <returns>保留行</returns>
+        private FileAuditLogEntry CreatePendingLogEntry(WatcherChangeTypes changeType, string fullPath, string oldFullPath, DateTime detectedAt, DateTime? lastWriteTime)
+        {
+            return new FileAuditLogEntry
+            {
+                検知時刻 = detectedAt,
+                変更種別 = changeType.ToString(),
+                フルパス = fullPath,
+                ファイル名 = Path.GetFileName(fullPath),
+                更新時間 = lastWriteTime,
+                最終更新者 = string.Empty,
+                ドメイン = string.Empty,
+                プロセス名 = string.Empty,
+                イベントID = null,
+                備考 = BuildPendingNote(changeType, fullPath, oldFullPath)
+            };
+        }
+
+        /// <summary>
+        /// 保留メモ生成処理
+        /// </summary>
+        /// <param name="changeType">変更種別</param>
+        /// <param name="fullPath">変更後フルパス</param>
+        /// <param name="oldFullPath">変更前フルパス</param>
+        /// <returns>保留メモ</returns>
+        private string BuildPendingNote(WatcherChangeTypes changeType, string fullPath, string oldFullPath)
+        {
+            if (changeType == WatcherChangeTypes.Renamed)
+            {
+                return string.Format("名前変更: {0} -> {1} / 監査ログ検索中", oldFullPath, fullPath);
+            }
+
+            return "監査ログ検索中";
+        }
+
+        /// <summary>
+        /// 監査情報解決処理
+        /// </summary>
+        /// <param name="changeType">変更種別</param>
+        /// <param name="fullPath">変更後フルパス</param>
+        /// <param name="oldFullPath">変更前フルパス</param>
+        /// <param name="detectedAt">検知時刻</param>
+        /// <returns>監査情報</returns>
+        private async Task<EventAuditInfo> ResolveAuditInfoAsync(WatcherChangeTypes changeType, string fullPath, string oldFullPath, DateTime detectedAt)
+        {
+            int lookBackSeconds = GetLookBackSeconds();
+            int[] retryDelays = GetRetryDelays(changeType);
+            EventAuditInfo best = new EventAuditInfo();
+
+            foreach (int retryDelay in retryDelays)
+            {
+                if (retryDelay > 0)
+                {
+                    // 監査ログ反映待ち
+                    await Task.Delay(retryDelay);
+                }
+
+                // 検知時刻基準の近傍照合
+                EventAuditInfo current = _eventLogReader.FindLatestAuditInfo(fullPath, lookBackSeconds, detectedAt, changeType, oldFullPath);
+
+                // より強い候補の採用
+                if (ShouldReplaceAuditInfo(changeType, detectedAt, current, best))
+                {
+                    best = current;
+                }
+
+                // 十分条件成立時の早期終了
+                if (IsResolvedAuditInfo(changeType, current))
+                {
+                    return current;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(best.ユーザー名) && string.IsNullOrWhiteSpace(best.備考))
+            {
+                // 全候補未一致時の既定メッセージ
+                best.備考 = "監査ログ未検出。監査反映待ち、監査設定、検索秒数を確認してください。";
+            }
+
+            return best;
+        }
+
+        /// <summary>
+        /// 再検索間隔取得処理
+        /// </summary>
+        /// <param name="changeType">変更種別</param>
+        /// <returns>再検索間隔一覧</returns>
+        private int[] GetRetryDelays(WatcherChangeTypes changeType)
+        {
+            if (changeType == WatcherChangeTypes.Created)
+            {
+                return new[] { 0, 500, 1500, 3000 };
+            }
+
+            if (changeType == WatcherChangeTypes.Deleted)
+            {
+                return new[] { 0, 700, 1800, 3500 };
+            }
+
+            return new[] { 0, 300, 900 };
+        }
+
+        /// <summary>
+        /// 監査解決判定処理
+        /// </summary>
+        /// <param name="changeType">変更種別</param>
+        /// <param name="auditInfo">監査情報</param>
+        /// <returns>解決判定結果</returns>
+        private bool IsResolvedAuditInfo(WatcherChangeTypes changeType, EventAuditInfo auditInfo)
+        {
+            if (auditInfo == null || string.IsNullOrWhiteSpace(auditInfo.ユーザー名))
+            {
+                return false;
+            }
+
+            if (changeType == WatcherChangeTypes.Deleted)
+            {
+                return auditInfo.イベントID == 4660
+                    || ContainsText(auditInfo.備考, "削除")
+                    || ContainsText(auditInfo.アクセス内容, "DELETE")
+                    || ContainsText(auditInfo.アクセス内容, "削除");
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 監査更新要否判定処理
+        /// </summary>
+        /// <param name="changeType">変更種別</param>
+        /// <param name="detectedAt">検知時刻</param>
+        /// <param name="current">今回候補</param>
+        /// <param name="best">保持候補</param>
+        /// <returns>更新要否判定結果</returns>
+        private bool ShouldReplaceAuditInfo(WatcherChangeTypes changeType, DateTime detectedAt, EventAuditInfo current, EventAuditInfo best)
+        {
+            if (current == null)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(best.ユーザー名) && !string.IsNullOrWhiteSpace(current.ユーザー名))
+            {
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(current.ユーザー名))
+            {
+                return string.IsNullOrWhiteSpace(best.ユーザー名) && !string.IsNullOrWhiteSpace(current.備考);
+            }
+
+            if (string.IsNullOrWhiteSpace(best.ユーザー名))
+            {
+                return true;
+            }
+
+            if (changeType == WatcherChangeTypes.Deleted)
+            {
+                // 削除候補優先
+                bool currentDeleted = current.イベントID == 4660 || ContainsText(current.備考, "削除");
+                bool bestDeleted = best.イベントID == 4660 || ContainsText(best.備考, "削除");
+
+                if (currentDeleted && !bestDeleted)
+                {
+                    return true;
+                }
+
+                if (!currentDeleted && bestDeleted)
+                {
+                    return false;
+                }
+            }
+
+            return GetAuditDistance(detectedAt, current) < GetAuditDistance(detectedAt, best);
+        }
+
+        /// <summary>
+        /// 監査時刻差取得処理
+        /// </summary>
+        /// <param name="detectedAt">検知時刻</param>
+        /// <param name="auditInfo">監査情報</param>
+        /// <returns>時刻差ミリ秒</returns>
+        private double GetAuditDistance(DateTime detectedAt, EventAuditInfo auditInfo)
+        {
+            if (auditInfo == null || !auditInfo.イベント時刻.HasValue)
+            {
+                return double.MaxValue;
+            }
+
+            return Math.Abs((detectedAt - auditInfo.イベント時刻.Value).TotalMilliseconds);
+        }
+
+        /// <summary>
+        /// 一覧行置換処理
+        /// </summary>
+        /// <param name="before">置換前行</param>
+        /// <param name="after">置換後行</param>
+        private void ReplaceEntry(FileAuditLogEntry before, FileAuditLogEntry after)
+        {
+            int index = _entries.IndexOf(before);
+
+            if (index < 0)
+            {
+                return;
+            }
+
+            _entries[index] = after;
+        }
+
+        /// <summary>
+        /// 部分一致判定処理
+        /// </summary>
+        /// <param name="source">対象文字列</param>
+        /// <param name="keyword">検索文字列</param>
+        /// <returns>判定結果</returns>
+        private bool ContainsText(string source, string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(keyword))
+            {
+                return false;
+            }
+
+            return source.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// <summary>
         /// 画面出力用データ作成処理
         /// </summary>
         /// <param name="changeType">変更種別</param>
         /// <param name="fullPath">変更後フルパス</param>
         /// <param name="oldFullPath">変更前フルパス</param>
+        /// <param name="detectedAt">検知時刻</param>
+        /// <param name="lastWriteTime">更新時間</param>
+        /// <param name="auditInfo">監査情報</param>
         /// <returns>画面出力用データ</returns>
-        private FileAuditLogEntry BuildLogEntry(WatcherChangeTypes changeType, string fullPath, string oldFullPath)
+        private FileAuditLogEntry BuildLogEntry(WatcherChangeTypes changeType, string fullPath, string oldFullPath, DateTime detectedAt, DateTime? lastWriteTime, EventAuditInfo auditInfo)
         {
-            DateTime detectedAt = DateTime.Now;
-            int lookBackSeconds = GetLookBackSeconds();
-            EventAuditInfo auditInfo = _eventLogReader.FindLatestAuditInfo(fullPath, lookBackSeconds, oldFullPath);
-            DateTime? lastWriteTime = TryGetLastWriteTime(fullPath);
             string note = BuildNote(changeType, fullPath, oldFullPath, auditInfo);
 
             return new FileAuditLogEntry
@@ -280,10 +523,10 @@ namespace ShareUpdateAuditLoggerSample
                 フルパス = fullPath,
                 ファイル名 = Path.GetFileName(fullPath),
                 更新時間 = lastWriteTime,
-                最終更新者 = auditInfo.ユーザー名,
-                ドメイン = auditInfo.ドメイン名,
-                プロセス名 = auditInfo.プロセス名,
-                イベントID = auditInfo.イベントID,
+                最終更新者 = auditInfo == null ? string.Empty : auditInfo.ユーザー名,
+                ドメイン = auditInfo == null ? string.Empty : auditInfo.ドメイン名,
+                プロセス名 = auditInfo == null ? string.Empty : auditInfo.プロセス名,
+                イベントID = auditInfo == null ? (int?)null : auditInfo.イベントID,
                 備考 = note
             };
         }
@@ -338,12 +581,26 @@ namespace ShareUpdateAuditLoggerSample
         {
             if (changeType == WatcherChangeTypes.Renamed)
             {
-                return string.Format("名前変更: {0} -> {1}", oldFullPath, fullPath);
+                string renameNote = string.Format("名前変更: {0} -> {1}", oldFullPath, fullPath);
+
+                if (auditInfo != null && !string.IsNullOrWhiteSpace(auditInfo.備考))
+                {
+                    return renameNote + " / " + auditInfo.備考;
+                }
+
+                return renameNote;
             }
 
-            if (string.IsNullOrWhiteSpace(auditInfo.ユーザー名))
+            if (auditInfo == null || string.IsNullOrWhiteSpace(auditInfo.ユーザー名))
             {
-                return "監査ログ未検出。監査反映待ち、監査設定、検索秒数を確認してください。";
+                return auditInfo != null && !string.IsNullOrWhiteSpace(auditInfo.備考)
+                    ? auditInfo.備考
+                    : "監査ログ未検出。監査反映待ち、監査設定、検索秒数を確認してください。";
+            }
+
+            if (!string.IsNullOrWhiteSpace(auditInfo.備考))
+            {
+                return auditInfo.備考;
             }
 
             if (!string.IsNullOrWhiteSpace(auditInfo.アクセス内容))

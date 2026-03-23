@@ -43,6 +43,16 @@ namespace ShareUpdateAuditLoggerSample.Services
         public string アクセス内容 { get; set; }
 
         /// <summary>
+        /// アクセスマスク
+        /// </summary>
+        public string アクセスマスク { get; set; }
+
+        /// <summary>
+        /// ハンドル ID
+        /// </summary>
+        public string ハンドルID { get; set; }
+
+        /// <summary>
         /// 備考
         /// </summary>
         public string 備考 { get; set; }
